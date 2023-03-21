@@ -3,16 +3,26 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 
+import '../utils/ad_units.dart';
 import 'local_db.dart';
 
 class AppController extends GetxController {
   LocalDb localDb = Get.put(LocalDb());
+  int numberOfgen = 0;
   List<int> generated = [];
   List<Color> colors = [];
   List<int> saved = [];
 
+  int attempts = 0;
+
   void generate() {
+    numberOfgen++;
+    if (numberOfgen % 3 == 0) {
+      Get.log('Try show interstutula ad');
+      showInterstitialAd();
+    }
     saved = [];
     int radNum;
     for (var i = 0; i < 7; i++) {
@@ -68,6 +78,65 @@ class AppController extends GetxController {
         },
       ),
     );
+  }
+
+  BannerAd? bannerAd;
+  void createBannnerAd() {
+    bannerAd = BannerAd(
+      size: AdSize.fullBanner,
+      adUnitId: AdService.bannerAdUnitId,
+      listener: BannerAdListener(
+        onAdLoaded: (ad) {
+          debugPrint('Banner Ad Loaded');
+        },
+        onAdFailedToLoad: (ad, error) {
+          ad.dispose();
+          debugPrint('Banner Ad failed to load');
+        },
+        onAdOpened: (ad) => debugPrint('Banner ad openned'),
+        onAdClosed: (ad) => debugPrint('Banner ad closed'),
+      ),
+      request: const AdRequest(),
+    )..load();
+  }
+
+  InterstitialAd? homeInterstitial;
+  void createInterstitialAd() {
+    InterstitialAd.load(
+      adUnitId: AdService.interstitialAdUnitId,
+      request: const AdRequest(),
+      adLoadCallback: InterstitialAdLoadCallback(
+        onAdLoaded: (ad) {
+          homeInterstitial = ad;
+        },
+        onAdFailedToLoad: (error) {
+          Get.log('Interstitial ad error: ${error.message}');
+          homeInterstitial = null;
+          attempts += 1;
+
+          if (attempts <= 50) {
+            createInterstitialAd();
+          }
+        },
+      ),
+    );
+  }
+
+  void showInterstitialAd() {
+    if (homeInterstitial != null) {
+      homeInterstitial!.fullScreenContentCallback = FullScreenContentCallback(
+        onAdDismissedFullScreenContent: (ad) {
+          ad.dispose();
+          createInterstitialAd();
+        },
+        onAdFailedToShowFullScreenContent: (ad, error) {
+          Get.log('Interstitial ad error: ${error.message}');
+          ad.dispose();
+          createInterstitialAd();
+        },
+      );
+      homeInterstitial!.show();
+    }
   }
 
   @override

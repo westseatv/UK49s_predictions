@@ -5,7 +5,6 @@ Future openUrl({required String url}) async {
   if (await canLaunchUrl(uri)) {
     launchUrl(
       uri,
-      mode: LaunchMode.inAppWebView,
     );
   }
 }

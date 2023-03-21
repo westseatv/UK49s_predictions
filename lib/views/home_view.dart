@@ -1,6 +1,10 @@
+import 'dart:io' as platiform;
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:uk49s_predictions/controllers/controller.dart';
+import 'package:uk49s_predictions/utils/url_launcher.dart';
 
 import '../models/saved.dart';
 import '../utils/time.dart';
@@ -12,10 +16,14 @@ class HomeView extends GetView<AppController> {
   @override
   Widget build(BuildContext context) {
     return GetBuilder<AppController>(
+      initState: (state) {
+        controller.createBannnerAd();
+        controller.createInterstitialAd();
+      },
       builder: (ctrl) {
         return Scaffold(
           appBar: AppBar(
-            title: const Text('Teatime & Lunchtime',
+            title: const Text('UK 49s Lunchtime & Teatime',
                 style: TextStyle(
                   fontSize: 14,
                 )),
@@ -37,30 +45,34 @@ class HomeView extends GetView<AppController> {
                     color: const Color.fromARGB(255, 3, 74, 109),
                   ),
                   child: const Text(
-                    'WEST SEA TV APP',
+                    '49s',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       color: Color.fromARGB(255, 2, 15, 26),
                     ),
                   ),
                 ),
-                Expanded(
-                  child: ListTileTheme(
-                    textColor: Colors.white,
-                    child: ListView.builder(
-                      itemCount: 5,
-                      itemBuilder: (context, index) => ListTile(
-                        title: Text('Item ${index + 1}'),
-                      ),
-                    ),
-                  ),
+                ListTile(
+                  textColor: Colors.white,
+                  title: const Text('Other App'),
+                  onTap: () => openUrl(
+                      url:
+                          'https://play.google.com/store/apps/details?id=com.westseatv.westsea_app&hl=en_ZA&gl=US'),
+                ),
+                ListTile(
+                  textColor: Colors.white,
+                  title: const Text('Daily Predictions'),
+                  onTap: () => openUrl(
+                      url:
+                          'https://play.google.com/store/apps/details?id=com.westseatv.westsea_app&hl=en_ZA&gl=US'),
                 ),
                 const Spacer(),
                 Container(
                   alignment: Alignment.centerLeft,
                   color: Colors.white,
                   child: TextButton.icon(
-                    onPressed: () {},
+                    onPressed: () =>
+                        openUrl(url: 'https://web.facebook.com/westseatv/'),
                     icon: const Icon(Icons.facebook_rounded),
                     label: const Text('Follow us @WEST SEA TV'),
                   ),
@@ -139,6 +151,7 @@ class HomeView extends GetView<AppController> {
                 ),
                 ElevatedButton(
                   onPressed: () {
+                    controller.showInterstitialAd();
                     Get.bottomSheet(
                       save(ctrl),
                       backgroundColor: const Color.fromARGB(255, 0, 25, 48),
@@ -165,6 +178,17 @@ class HomeView extends GetView<AppController> {
               ],
             ),
           ),
+          bottomNavigationBar:
+              ctrl.bannerAd == null && platiform.Platform.isAndroid
+                  ? null
+                  : StatefulBuilder(
+                      builder: (context, setState) => Container(
+                        height: 52,
+                        width: Get.width,
+                        margin: const EdgeInsets.only(bottom: 10),
+                        child: AdWidget(ad: ctrl.bannerAd!),
+                      ),
+                    ),
         );
       },
     );
