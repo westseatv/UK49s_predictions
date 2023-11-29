@@ -12,8 +12,48 @@ class AppController extends GetxController {
   LocalDb localDb = Get.put(LocalDb());
   int numberOfgen = 0;
   List<int> generated = [];
+
   List<Color> colors = [];
   List<int> saved = [];
+
+  List<Color> twoBallColors = [];
+  Map<int, Set> numbers = {};
+
+  Future<Map<int, Set>> cookNumbers() async {
+    if (twoBallColors.isNotEmpty) {
+      twoBallColors.clear();
+    }
+    final Random random = Random();
+    for (var numb = 0; numb < 7; numb++) {
+      final int randomRValue = random.nextInt(254);
+      final int randomGValue = random.nextInt(254);
+      final int randomBValue = random.nextInt(254);
+
+      final Color firstColor =
+          Color.fromARGB(255, randomRValue, randomGValue, randomBValue);
+      final Color lastColor =
+          Color.fromARGB(255, randomRValue, randomGValue, randomBValue);
+      twoBallColors.add(
+        firstColor,
+      );
+
+      final int firstBall = random.nextInt(49) + 1;
+      final int lastBall = random.nextInt(49) + 1;
+      final Map<int, Set> newPredicts = {
+        numb: {firstBall, lastBall}
+      };
+      numbers.addAll(newPredicts);
+    }
+
+    final int randomRValue = random.nextInt(254);
+    final int randomGValue = random.nextInt(254);
+    final int randomBValue = random.nextInt(254);
+
+    final Color lastColor =
+        Color.fromARGB(255, randomRValue, randomGValue, randomBValue);
+    twoBallColors.add(lastColor);
+    return numbers;
+  }
 
   int attempts = 0;
 
@@ -80,14 +120,15 @@ class AppController extends GetxController {
     );
   }
 
-  BannerAd? bannerAd;
+  bool isBannerloaded = false;
+  late BannerAd bannerAd;
   void createBannnerAd() {
     bannerAd = BannerAd(
       size: AdSize.fullBanner,
       adUnitId: AdService.bannerAdUnitId,
       listener: BannerAdListener(
         onAdLoaded: (ad) {
-          debugPrint('Banner Ad Loaded');
+          isBannerloaded = true;
         },
         onAdFailedToLoad: (ad, error) {
           ad.dispose();
@@ -141,6 +182,8 @@ class AppController extends GetxController {
 
   @override
   void onInit() {
+    createInterstitialAd();
+    createBannnerAd();
     init();
     super.onInit();
   }

@@ -15,8 +15,6 @@ class Ball extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       alignment: Alignment.center,
-      width: small ? 30 : 40,
-      height: small ? 30 : 40,
       margin: const EdgeInsets.only(left: 2),
       padding: small ? null : const EdgeInsets.all(10),
       decoration: BoxDecoration(
@@ -24,8 +22,7 @@ class Ball extends StatelessWidget {
         shape: BoxShape.circle,
       ),
       child: Container(
-        width: small ? 20 : 30,
-        height: small ? 20 : 30,
+        padding: const EdgeInsets.all(5),
         alignment: Alignment.center,
         decoration: const BoxDecoration(
           color: Colors.white,
